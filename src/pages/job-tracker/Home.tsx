@@ -1,204 +1,125 @@
-import { Link } from "react-router";
+import { trpc } from "@/providers/trpc";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { SkillTag } from "@/components/job-tracker/SkillTag";
-import {
-  ArrowRight,
-  Code,
-  Users,
-  GraduationCap,
-  Clock,
-  MapPin,
-  Briefcase,
-  CheckCircle,
-  Laptop,
-  Zap,
-} from "lucide-react";
-
-const requiredSkills = [
-  "React",
-  "TypeScript",
-  "Node.js",
-  "Tailwind CSS",
-  "Git",
-  "REST APIs",
-  "Problem Solving",
-  "Teamwork",
-];
-
-const benefits = [
-  { icon: Laptop, title: "Remote Friendly", desc: "Work from anywhere with flexible hours" },
-  { icon: GraduationCap, title: "Learning Budget", desc: "Annual allowance for courses and books" },
-  { icon: Users, title: "Mentorship", desc: "One-on-one guidance from senior engineers" },
-  { icon: Zap, title: "Real Projects", desc: "Work on production code from day one" },
-];
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MapPin, Clock, Briefcase, ChevronRight, Search } from "lucide-react";
+import { Link } from "react-router";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
 
 export default function Home() {
+  const { user } = useAuth();
+  const [search, setSearch] = useState("");
+  
+  const { data: jobs, isLoading } = trpc.jobs.list.useQuery({
+    search: search || undefined,
+  });
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 text-white py-20 lg:py-28 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-10 w-64 h-64 bg-white rounded-full blur-3xl" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-400 rounded-full blur-3xl" />
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
-            <div className="flex items-center gap-2 mb-6">
-              <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-medium backdrop-blur-sm">
-                Open Position
-              </span>
-              <span className="text-indigo-200 text-sm">Posted on June 15, 2025</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              Software Engineering Intern
-            </h1>
-            <p className="text-xl text-indigo-100 mb-8">
-              Join our team and kickstart your career in software development. Work on real
-              projects, learn from experienced mentors, and grow your skills.
-            </p>
-            <div className="flex flex-wrap items-center gap-6 text-sm text-indigo-200 mb-10">
-              <div className="flex items-center gap-2">
-                <Briefcase className="w-4 h-4" />
-                Internship
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                Cairo, Egypt (Hybrid)
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                3 Months
-              </div>
-              <div className="flex items-center gap-2">
-                <Code className="w-4 h-4" />
-                Engineering Team
-              </div>
-            </div>
-            <Link to="/apply">
-              <Button
-                size="lg"
-                className="bg-white text-indigo-700 hover:bg-gray-100 font-semibold px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all"
-              >
-                Apply Now
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Hero */}
+      <section className="bg-indigo-700 text-white py-16 px-4">
+        <div className="max-w-4xl mx-auto text-center space-y-6">
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
+            Find Your Next Career Move
+          </h1>
+          <p className="text-xl text-indigo-100 max-w-2xl mx-auto">
+            Discover thousands of job opportunities or post your own to find the perfect candidate.
+          </p>
+          
+          <div className="max-w-xl mx-auto relative group mt-8">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+            <Input 
+              className="pl-12 h-14 bg-white text-gray-900 rounded-full shadow-lg border-2 border-transparent focus:border-indigo-400 transition-all text-lg"
+              placeholder="Search job titles, skills..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
         </div>
       </section>
 
-      {/* Job Description */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-2 space-y-10">
-            {/* About the Role */}
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">About the Role</h2>
-              <div className="prose prose-gray max-w-none text-gray-600 leading-relaxed">
-                <p>
-                  We are looking for passionate Software Engineering Interns to join our growing
-                  team. This is a unique opportunity to gain hands-on experience in a fast-paced
-                  tech environment while working on products that impact thousands of users.
-                </p>
-                <p className="mt-4">
-                  As an intern, you will be paired with experienced mentors who will guide you
-                  through real-world projects. You will participate in code reviews, daily standups,
-                  and team planning sessions — giving you a complete picture of what it is like
-                  to work as a professional software engineer.
-                </p>
+      {/* Role Prompt if not logged in */}
+      {!user && (
+        <div className="max-w-7xl mx-auto mt-[-2rem] grid grid-cols-1 md:grid-cols-2 gap-6 w-full px-4 z-10">
+          <Card className="shadow-xl hover:shadow-2xl transition-all border-l-4 border-l-indigo-500">
+            <CardContent className="p-8 flex justify-between items-center">
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Looking for work?</h3>
+                <p className="text-gray-500">Apply to top companies in minutes.</p>
               </div>
-            </div>
-
-            {/* Responsibilities */}
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Key Responsibilities</h2>
-              <ul className="space-y-3">
-                {[
-                  "Develop and maintain web applications using React and Node.js",
-                  "Collaborate with designers to implement responsive UI components",
-                  "Write clean, well-documented, and testable code",
-                  "Participate in code reviews and provide constructive feedback",
-                  "Debug and fix issues reported by QA or users",
-                  "Contribute to technical discussions and architecture decisions",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-600">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Requirements */}
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Requirements</h2>
-              <ul className="space-y-3">
-                {[
-                  "Currently enrolled in a Computer Science or related degree program",
-                  "Strong understanding of JavaScript fundamentals",
-                  "Familiarity with HTML, CSS, and modern web development",
-                  "Basic knowledge of Git version control",
-                  "Excellent problem-solving and analytical skills",
-                  "Good communication skills in English",
-                  "Available for at least 3 months",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-600">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Required Skills */}
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Required Skills</h2>
-              <div className="flex flex-wrap gap-2">
-                {requiredSkills.map((skill) => (
-                  <SkillTag key={skill} skill={skill} />
-                ))}
+              <Link to="/login">
+                <Button size="lg" className="rounded-full px-8">Find a Job</Button>
+              </Link>
+            </CardContent>
+          </Card>
+          <Card className="shadow-xl hover:shadow-2xl transition-all border-l-4 border-l-purple-500">
+            <CardContent className="p-8 flex justify-between items-center">
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Want to hire?</h3>
+                <p className="text-gray-500">Post your vacancies today.</p>
               </div>
-            </div>
+              <Link to="/login">
+                <Button variant="outline" size="lg" className="rounded-full px-8 border-purple-200 text-purple-700">Post a Job</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Job List */}
+      <section className="max-w-5xl mx-auto w-full px-4 py-12 flex-1">
+        <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-2">
+          <Briefcase className="w-6 h-6 text-indigo-600" />
+          {search ? `Searching for "${search}"` : "Latest Opportunities"}
+        </h2>
+
+        {isLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => <div key={i} className="h-32 bg-gray-200 animate-pulse rounded-xl" />)}
           </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Program Benefits</h3>
-                <div className="space-y-4">
-                  {benefits.map((benefit, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <div className="p-2 bg-indigo-50 rounded-lg">
-                        <benefit.icon className="w-5 h-5 text-indigo-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{benefit.title}</p>
-                        <p className="text-sm text-gray-500">{benefit.desc}</p>
+        ) : jobs?.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+            <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500 text-lg">No jobs found matching your criteria.</p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {jobs?.map((job) => (
+              <Card key={job.id} className="hover:border-indigo-300 hover:shadow-md transition-all group overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="flex flex-col md:flex-row md:items-center p-6 gap-6">
+                    <div className="bg-indigo-50 p-4 rounded-xl group-hover:bg-indigo-100 transition-colors">
+                      <Briefcase className="w-10 h-10 text-indigo-600" />
+                    </div>
+                    
+                    <div className="flex-1 space-y-2">
+                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                        {job.title}
+                      </h3>
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                        <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {job.location}</span>
+                        <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {job.type}</span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Apply Now</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Ready to take the next step in your career? Submit your application today!
-                </p>
-                <Link to="/apply" className="block">
-                  <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
-                    Start Application
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+                    <div className="flex items-center gap-4">
+                      <Link to={`/job/${job.id}`}>
+                        <Button variant="ghost" className="gap-2 group/btn font-semibold text-indigo-600">
+                          Details
+                          <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                        </Button>
+                      </Link>
+                      <Link to={`/apply?jobId=${job.id}`}>
+                        <Button className="bg-indigo-600 hover:bg-indigo-700 px-8 rounded-full">Apply Now</Button>
+                      </Link>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </div>
+        )}
       </section>
     </div>
   );

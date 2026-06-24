@@ -6,12 +6,14 @@ import Home from "./pages/job-tracker/Home";
 import Apply from "./pages/job-tracker/Apply";
 import Success from "./pages/job-tracker/Success";
 import AdminDashboard from "./pages/job-tracker/AdminDashboard";
+import EmployerDashboard from "./pages/job-tracker/EmployerDashboard";
+import CandidateDashboard from "./pages/job-tracker/CandidateDashboard";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />
@@ -49,9 +51,26 @@ export default function App() {
             </Layout>
           }
         />
+        <Route
+          path="/employer"
+          element={
+            <Layout>
+              <EmployerDashboard />
+            </Layout>
+          }
+        />
+        <Route
+          path="/candidate"
+          element={
+            <Layout>
+              <CandidateDashboard />
+            </Layout>
+          }
+        />
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );
 }
+

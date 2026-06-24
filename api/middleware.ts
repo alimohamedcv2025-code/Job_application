@@ -38,5 +38,8 @@ function requireRole(role: string) {
   });
 }
 
-export const authedQuery = t.procedure.use(requireAuth);
-export const adminQuery = authedQuery.use(requireRole("admin"));
+export const authedProcedure = t.procedure.use(requireAuth);
+export const adminProcedure = authedProcedure.use(requireRole("admin"));
+export const employerProcedure = authedProcedure.use(requireRole("employer"));
+export const candidateProcedure = authedProcedure.use(requireRole("candidate"));
+

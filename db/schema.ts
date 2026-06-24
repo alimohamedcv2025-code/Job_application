@@ -5,16 +5,16 @@ import {
   varchar,
   text,
   timestamp,
-  // bigint,
+  int,
 } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: serial("id").primaryKey(),
-  unionId: varchar("unionId", { length: 255 }).notNull().unique(),
+  googleId: varchar("googleId", { length: 255 }).unique(), // Replacing unionId with googleId
+  role: mysqlEnum("role", ["candidate", "employer", "admin"]).default("candidate").notNull(),
   name: varchar("name", { length: 255 }),
   email: varchar("email", { length: 320 }),
   avatar: text("avatar"),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt")
     .defaultNow()
@@ -26,9 +26,28 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// Applications table for job application tracker
+export const jobs = mysqlTable("jobs", {
+  id: serial("id").primaryKey(),
+  employerId: int("employerId").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  requirements: text("requirements").notNull(),
+  location: varchar("location", { length: 255 }).notNull(),
+  type: mysqlEnum("type", ["Full-time", "Part-time", "Internship", "Contract"]).default("Full-time").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt")
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
+export type Job = typeof jobs.$inferSelect;
+export type InsertJob = typeof jobs.$inferInsert;
+
 export const applications = mysqlTable("applications", {
   id: serial("id").primaryKey(),
+  jobId: int("jobId").notNull(),
+  candidateId: int("candidateId").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 320 }).notNull(),
   phone: varchar("phone", { length: 20 }).notNull(),
@@ -38,20 +57,23 @@ export const applications = mysqlTable("applications", {
   skills: text("skills").notNull(),
   cvLink: text("cvLink").notNull(),
   coverLetter: text("coverLetter"),
-  status: mysqlEnum("status", ["Pending", "Accepted", "Rejected"]).default("Pending").notNull(),
+  status: mysqlEnum("status", ["Pending", "Accepted", "Rejected", "Interviewing"]).default("Pending").notNull(),
+  rejectionReason: text("rejectionReason"),
   submittedAt: timestamp("submittedAt").defaultNow().notNull(),
 });
 
 export type Application = typeof applications.$inferSelect;
 export type InsertApplication = typeof applications.$inferInsert;
-//
-// Example:
-// export const posts = mysqlTable("posts", {
-//   id: serial("id").primaryKey(),
-//   title: varchar("title", { length: 255 }).notNull(),
-//   content: text("content"),
-//   createdAt: timestamp("created_at").notNull().defaultNow(),
-// });
-//
-// Note: FK columns referencing a serial() PK must use:
-//   bigint("columnName", { mode: "number", unsigned: true }).notNull()
+
+export const interviews = mysqlTable("interviews", {
+  id: serial("id").primaryKey(),
+  applicationId: int("applicationId").notNull(),
+  scheduledAt: timestamp("scheduledAt").notNull(),
+  location: varchar("location", { length: 255 }), // Online or Physical address
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Interview = typeof interviews.$inferSelect;
+export type InsertInterview = typeof interviews.$inferInsert;
+
